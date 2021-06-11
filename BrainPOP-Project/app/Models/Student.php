@@ -21,7 +21,7 @@ class Student extends Model
         'name',
         'username',
         'password',
-        'grade'
+        'grade',
     ];
 
     /**

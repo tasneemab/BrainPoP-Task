@@ -11,6 +11,10 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\Period\StorePeriodRequest;
+use App\Http\Requests\Student\GetStudentRequest;
+use App\Http\Requests\Student\UpdateStudentRequest;
+use App\Http\Requests\Student\DeleteStudentRequest;
 
 
 class StudentController extends Controller
@@ -18,9 +22,10 @@ class StudentController extends Controller
   /**
    * Display a listing of the resource.
    *
+   * @param  \App\Http\Requests\Student\GetStudentRequest $request (Authoization)
    * @return \Illuminate\Http\Response
    */
-  public function index()
+  public function index(GetStudentRequest $request)
   {
       return Student::with('periods')->get()->toJson();
   }
@@ -28,18 +33,18 @@ class StudentController extends Controller
   /**
    * Store a newly created resource in storage.
    *
-   * @param  \Illuminate\Http\Request  $request
+   * @param  \App\Http\Requests\Student\StoreStudentRequest $request (Authoization && validation)
    * @return \Illuminate\Http\Response
    */
-  public function store(Request $request)
+  public function store(StoreStudentRequest $request)
   {
     try {
       $record = new Student( $request->all() );
       $record->password = Hash::make($request->password);
       $record->save();
 
-      $record->periods()->attach($request->periods);
       //saves all the periods assosiated with student
+      $record->periods()->attach($request->periods);
 
       return response($record, 201);
      } catch (\Exception $e) {
@@ -56,10 +61,11 @@ class StudentController extends Controller
   /**
    * Display the specified resource.
    *
+   * @param  \App\Http\Requests\Student\GetStudentRequest $request (Authoization)
    * @param  int  $id
    * @return \Illuminate\Http\Response
    */
-  public function show($id)
+  public function show(GetStudentRequest $request, $id)
   {
       return Student::with('periods')->findOrFail($id);
   }
@@ -67,26 +73,17 @@ class StudentController extends Controller
   /**
    * Update the specified resource in storage.
    *
-   * @param  \Illuminate\Http\Request  $request
+   * @param  \App\Http\Requests\Student\UpdateStudentRequest $request (Authoization && validation)
    * @param  int  $id
    * @return \Illuminate\Http\Response
    */
-  public function update(Request $request, $id)
+  public function update(UpdateStudentRequest $request, $id)
   {
     $record = Student::findOrFail($id);
     try {
       $record->update( $request->all() );
-      foreach ($request->input('periods', []) as $period) {
-        if ( isset($period['id']) ) {
-          $row = Period::findOrFail( $period['id'] );
-          $row->update($period);
-        }
-        else {
-          $row = new Period($period);
-          $row->student_id = $record->id;
-          $row->save();
-        }
-      }
+      //saves all the periods assosiated with student
+      $record->periods()->attach($request->periods);
       return response($record);
     } catch (\Exception $e) {
       Log::error($e);
@@ -97,10 +94,11 @@ class StudentController extends Controller
   /**
    * Remove the specified resource from storage.
    *
+   * @param  \App\Http\Requests\Student\DeleteStudentRequest $request (Authoization && validation)
    * @param  int  $id
    * @return \Illuminate\Http\Response
    */
-  public function destroy($id)
+  public function destroy(DeleteStudentRequest $request, $id)
   {
     $record = Student::findOrFail($id);
     $temp_timestamp = $record->updated_at; //inorder to save the last time the record have been updated before the deletion.
