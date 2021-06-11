@@ -93,6 +93,7 @@ class PeriodController extends Controller
       $record = Period::findOrFail($id);
       $temp_timestamp = $record->updated_at; //inorder to save the last time the record have been updated before the deletion.
       $result = $record->delete();
+      $record->students()->detach(); //remove assosiated studens in the given peiod
       if ($result) {
       $record['updated_at'] = $temp_timestamp; //returning the last time the record has been updated befor the deletion.
       $result = $record->save();
