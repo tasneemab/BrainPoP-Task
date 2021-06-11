@@ -27,7 +27,7 @@ class StoreStudentRequest extends FormRequest
           'name' => 'required',
           'username' => 'required|unique:students',
           'password' => 'required|min:6|regex:/^(?=.*\d.*\d)[0-9A-Za-z]{6,}$/',
-          'grade'=>'required|numeric',
+          'grade'=>'required|numeric|between:0,12',
           'periods' => 'array',
           'periods.*' => 'numeric'
         ];

@@ -26,7 +26,7 @@ class UpdateStudentRequest extends FormRequest
         return [
           'name' => 'required',
           'username' => 'required|unique:students',
-          'grade'=>'required|numeric',
+          'grade'=>'required|numeric|between:0,12',
           'periods' => 'array',
           'periods.*' => 'numeric'
         ];
